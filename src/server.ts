@@ -302,7 +302,7 @@ app.post("/interactions", async (c) => {
     }
   } else if (interaction.type === InteractionType.MessageComponent) {
     if (isMessageComponentButtonInteraction(interaction)) {
-
+      return;
     }
   }
 
