@@ -358,7 +358,7 @@ app.post("/interactions", async (c) => {
             });
           }
         });
-        await fetch(
+        const res = await fetch(
           `https://discord.com/api/v10${Routes.channelMessages(
             interaction.channel.id,
           )}`,
@@ -370,12 +370,15 @@ app.post("/interactions", async (c) => {
             body: JSON.stringify({
               embeds: [
                 {
-                  description: results
-                    .map(
-                      (x) =>
-                        `${x.key} - GPT4 ${x.gpt4 ? ":o:" : ":x:"} ${x.reason}`,
-                    )
-                    .join("\n"),
+                  description:
+                    results
+                      .map(
+                        (x) =>
+                          `${x.key} - GPT4 ${x.gpt4 ? ":o:" : ":x:"} ${
+                            x.reason
+                          }`,
+                      )
+                      .join("\n") || "none",
                 },
               ],
               message_reference: {
@@ -385,6 +388,7 @@ app.post("/interactions", async (c) => {
             }),
           },
         );
+        logger.debug(await res.json());
         return c.json({
           type: InteractionResponseType.UpdateMessage,
           data: {
