@@ -6,6 +6,7 @@ import {
   InteractionResponseType,
   InteractionType,
   MessageFlags,
+  Routes,
 } from "discord-api-types/v10";
 import { getLogger } from "./logger";
 import {
@@ -280,9 +281,12 @@ app.post("/interactions", async (c) => {
                   description: results
                     .map(
                       (x) =>
-                        `*${x.key}* - ${x.available ? "🟢" : "🔴"} ${x.reason}`,
+                        `${x.key} - ${x.available ? "🟢" : "🔴"} ${x.reason}`,
                     )
                     .join("\n"),
+                  footer: {
+                    text: results.map((x) => (x.available ? 1 : 0)).join(""),
+                  },
                 },
               ],
               components: [
@@ -305,7 +309,87 @@ app.post("/interactions", async (c) => {
     }
   } else if (interaction.type === InteractionType.MessageComponent) {
     if (isMessageComponentButtonInteraction(interaction)) {
-      return;
+      const customId = interaction.data.custom_id;
+      if (customId === "gpt4") {
+        const statuses = interaction.message.embeds[0]?.footer?.text;
+        if (!statuses)
+          return c.json({
+            type: InteractionResponseType.DeferredMessageUpdate,
+          });
+        const st = statuses.split("").map((x) => !!x);
+        const desc = interaction.message.embeds[0]?.description;
+        if (!desc)
+          return c.json({
+            type: InteractionResponseType.DeferredMessageUpdate,
+          });
+        const keys = desc
+          .split("\n")
+          .map((x) => x.slice(0, 51))
+          .filter((x, i) => st[i]);
+        const responses = await Promise.all(
+          keys.map((x) => {
+            return fetch("https://api.openai.com/v1/models", {
+              headers: {
+                authorization: `Bearer ${x}`,
+              },
+            });
+          }),
+        );
+        const responsesJson = await Promise.all(responses.map((x) => x.json()));
+        const results: any[] = [];
+        responsesJson.forEach((result, i) => {
+          if (result.error) {
+            results.push({
+              key: keys[i],
+              gpt4: false,
+              reason: result.error.message,
+            });
+          } else if (result.data.map((x: any) => x.id).includes("gpt-4")) {
+            results.push({
+              key: keys[i],
+              gpt4: true,
+              reason: "",
+            });
+          } else {
+            results.push({
+              key: keys[i],
+              gpt4: false,
+              reason: "",
+            });
+          }
+        });
+        await fetch(
+          `https://discord.com/api/v10${Routes.channelMessages(
+            interaction.channel.id,
+          )}`,
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bot ${c.env?.DISCORD_TOKEN}`,
+            },
+            body: JSON.stringify({
+              embeds: [
+                {
+                  description: results.map(
+                    (x) =>
+                      `${x.key} - GPT4 ${x.gpt4 ? ":o:" : ":x:"} ${x.reason}`,
+                  ),
+                },
+              ],
+              message_reference: {
+                message_id: interaction.message.id,
+                fail_if_not_exists: false,
+              },
+            }),
+          },
+        );
+        return c.json({
+          type: InteractionResponseType.UpdateMessage,
+          data: {
+            components: [],
+          },
+        });
+      }
     }
   }
 
