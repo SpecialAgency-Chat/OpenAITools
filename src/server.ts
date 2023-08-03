@@ -63,9 +63,11 @@ app.post("/interactions", async (c) => {
         case "check": {
           logger.debug("handling check interaction");
           const api = interaction.data.options?.filter(isString)[0];
-          const ephemeral = interaction.data.options?.filter(isBoolean)[0].value
+          const ephemeral = interaction.data.options?.filter(isBoolean)[0]?.value
             ? MessageFlags.Ephemeral
             : 0;
+          logger.debug(api);
+          logger.debug(ephemeral);
           const [data, emptyData] = await Promise.all([
             fetch("https://api.openai.com/v1/models", {
               headers: {
