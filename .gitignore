@@ -130,3 +130,8 @@ dist
 .pnp.*
 
 .dev.vars
+.build
+.config
+.upm
+.replit
+replit.nix
