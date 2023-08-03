@@ -248,7 +248,7 @@ app.post("/interactions", async (c) => {
                 reason: "Server Error - 429",
               });
             } else if (result.error) {
-              if (result.error.code === "invalid_request_error") {
+              if (result.error.type === "invalid_request_error") {
                 results.push({
                   key: keys[i],
                   available: true,
