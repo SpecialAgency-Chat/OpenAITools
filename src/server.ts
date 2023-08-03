@@ -148,7 +148,10 @@ app.post("/interactions", async (c) => {
           }
           logger.debug("Not 429");
           const models = jsonData.data
-            .filter((x: { object: "model" }) => x.object === "model")
+            .filter(
+              (x: { object: "model"; id: string }) =>
+                x.object === "model" && x.id.startsWith("gpt"),
+            )
             .map((x: { id: string }) => x.id);
           logger.debug({
             embeds: [
