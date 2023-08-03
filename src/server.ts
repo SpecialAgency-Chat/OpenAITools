@@ -316,7 +316,7 @@ app.post("/interactions", async (c) => {
           return c.json({
             type: InteractionResponseType.DeferredMessageUpdate,
           });
-        const st = statuses.split("").map((x) => !!x);
+        const st = statuses.split("").map((x) => !!Number(x));
         const desc = interaction.message.embeds[0]?.description;
         if (!desc)
           return c.json({
