@@ -370,10 +370,12 @@ app.post("/interactions", async (c) => {
             body: JSON.stringify({
               embeds: [
                 {
-                  description: results.map(
-                    (x) =>
-                      `${x.key} - GPT4 ${x.gpt4 ? ":o:" : ":x:"} ${x.reason}`,
-                  ),
+                  description: results
+                    .map(
+                      (x) =>
+                        `${x.key} - GPT4 ${x.gpt4 ? ":o:" : ":x:"} ${x.reason}`,
+                    )
+                    .join("\n"),
                 },
               ],
               message_reference: {
