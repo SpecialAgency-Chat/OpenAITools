@@ -27,6 +27,19 @@ const commands: RESTPostAPIApplicationCommandsJSONBody[] = [
       },
     ],
   },
+  {
+    name: "masscheck",
+    description: "Mass-check OpenAI Keys",
+    options: [
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "key",
+        description: "Keys. Split with , or line feed or \\n",
+        required: true,
+        min_length: 80,
+      },
+    ],
+  },
 ];
 
 export default commands;

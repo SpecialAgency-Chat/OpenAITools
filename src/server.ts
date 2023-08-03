@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { verifyDiscordRequest } from "@/verifyDiscordRequest";
 import {
+  ButtonStyle,
+  ComponentType,
   InteractionResponseType,
   InteractionType,
   MessageFlags,
@@ -196,6 +198,94 @@ app.post("/interactions", async (c) => {
                 },
               ],
               flags: ephemeral,
+            },
+          });
+        }
+        case "masscheck": {
+          logger.debug("handling masscheck interaction");
+          const api = interaction.data.options?.filter(isString)[0];
+          logger.debug(api);
+          const keys = api!.value.split(/,|\n|\\n/);
+          const responses = await Promise.all(
+            keys.map((x) => {
+              return fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${x}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ model: "gpt-3.5-turbo" }),
+              });
+            }),
+          );
+          const responsesJson = await Promise.all(
+            responses.map((x) => x.json()),
+          );
+          const results: any[] = [];
+          responsesJson.forEach((result, i) => {
+            if (result.error && result.error.code === "invalid_api_key") {
+              results.push({
+                key: keys[i],
+                available: false,
+                gpt4: false,
+                reason: "Invalid API Key",
+              });
+            } else if (result.error.code === "insufficient_quota") {
+              results.push({
+                key: keys[i],
+                available: false,
+                gpt4: false,
+                reason: "Exceeded quota",
+              });
+            } else if (responses[i].status === 429) {
+              results.push({
+                key: keys[i],
+                available: false,
+                gpt4: false,
+                reason: "Server Error - 429",
+              });
+            } else if (result.error) {
+              results.push({
+                key: keys[i],
+                available: false,
+                gpt4: false,
+                reason: result.error.message,
+              });
+            } else {
+              results.push({
+                key: keys[i],
+                available: true,
+                gpt4: false,
+                reason: "",
+              });
+            }
+          });
+          return c.json({
+            type: InteractionResponseType.ChannelMessageWithSource,
+            data: {
+              embeds: [
+                {
+                  description: results
+                    .map(
+                      (x) =>
+                        `*${x.key}* - ${x.available ? "🟢" : "🔴"} ${x.reason}`,
+                    )
+                    .join("\n"),
+                },
+              ],
+              components: [
+                {
+                  type: ComponentType.ActionRow,
+                  components: [
+                    {
+                      type: ComponentType.Button,
+                      label: "Check GPT-4",
+                      custom_id: "gpt4",
+                      style: ButtonStyle.Secondary,
+                    },
+                  ],
+                },
+              ],
             },
           });
         }
