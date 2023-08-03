@@ -8,7 +8,10 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { getLogger } from "./logger";
-import { isChatInputApplicationCommandInteraction, isMessageComponentButtonInteraction } from "discord-api-types/utils/v10";
+import {
+  isChatInputApplicationCommandInteraction,
+  isMessageComponentButtonInteraction,
+} from "discord-api-types/utils/v10";
 import {
   APIApplicationCommandInteractionDataOption,
   APIApplicationCommandInteractionDataStringOption,
