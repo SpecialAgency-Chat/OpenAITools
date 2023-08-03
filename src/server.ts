@@ -150,6 +150,7 @@ app.post("/interactions", async (c) => {
           const models = jsonData.data
             .filter((x: { object: "model" }) => x.object === "model")
             .map((x: { id: string }) => x.id);
+          logger.debug(models);
           return c.json({
             type: InteractionResponseType.ChannelMessageWithSource,
             data: {
@@ -161,8 +162,13 @@ app.post("/interactions", async (c) => {
                     {
                       name: "GPT-4",
                       value: `${models.includes("gpt-4") ? "🟢" : "🔴"}`,
+                      inline: true,
                     },
-                    { name: "Usable models", value: models.join(",") },
+                    {
+                      name: "Usable models",
+                      value: models.join(","),
+                      inline: true,
+                    },
                   ],
                 },
               ],
