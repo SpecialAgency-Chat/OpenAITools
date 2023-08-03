@@ -118,6 +118,7 @@ app.post("/interactions", async (c) => {
               });
             }
           }
+          logger.debug("Not Error");
           if (
             emptyJsonData.error &&
             emptyJsonData.error.code === "insufficient_quota"
@@ -135,6 +136,7 @@ app.post("/interactions", async (c) => {
               },
             });
           }
+          logger.debug("Quota");
           if (data.status === 429) {
             return c.json({
               type: InteractionResponseType.ChannelMessageWithSource,
@@ -144,6 +146,7 @@ app.post("/interactions", async (c) => {
               },
             });
           }
+          logger.debug("Not 429");
           const models = jsonData.data
             .filter((x: { object: "model" }) => x.object === "model")
             .map((x: { id: string }) => x.id);
