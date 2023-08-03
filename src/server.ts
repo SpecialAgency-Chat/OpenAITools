@@ -366,6 +366,7 @@ app.post("/interactions", async (c) => {
             method: "POST",
             headers: {
               authorization: `Bot ${c.env?.DISCORD_TOKEN}`,
+              "content-type": "application/json",
             },
             body: JSON.stringify({
               embeds: [
