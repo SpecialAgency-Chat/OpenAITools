@@ -8,7 +8,7 @@ import {
   MessageFlags,
 } from "discord-api-types/v10";
 import { getLogger } from "./logger";
-import { isChatInputApplicationCommandInteraction } from "discord-api-types/utils/v10";
+import { isChatInputApplicationCommandInteraction, isMessageComponentButtonInteraction } from "discord-api-types/utils/v10";
 import {
   APIApplicationCommandInteractionDataOption,
   APIApplicationCommandInteractionDataStringOption,
@@ -245,12 +245,21 @@ app.post("/interactions", async (c) => {
                 reason: "Server Error - 429",
               });
             } else if (result.error) {
-              results.push({
-                key: keys[i],
-                available: false,
-                gpt4: false,
-                reason: result.error.message,
-              });
+              if (result.error.code === "invalid_request_error") {
+                results.push({
+                  key: keys[i],
+                  available: true,
+                  gpt4: false,
+                  reason: "",
+                });
+              } else {
+                results.push({
+                  key: keys[i],
+                  available: false,
+                  gpt4: false,
+                  reason: result.error.message,
+                });
+              }
             } else {
               results.push({
                 key: keys[i],
@@ -290,6 +299,10 @@ app.post("/interactions", async (c) => {
           });
         }
       }
+    }
+  } else if (interaction.type === InteractionType.MessageComponent) {
+    if (isMessageComponentButtonInteraction(interaction)) {
+
     }
   }
 
