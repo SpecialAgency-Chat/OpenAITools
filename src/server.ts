@@ -150,7 +150,27 @@ app.post("/interactions", async (c) => {
           const models = jsonData.data
             .filter((x: { object: "model" }) => x.object === "model")
             .map((x: { id: string }) => x.id);
-          logger.debug(models);
+          logger.debug({
+            embeds: [
+              {
+                color: 0x00ff00,
+                description: "Available",
+                fields: [
+                  {
+                    name: "GPT-4",
+                    value: `${models.includes("gpt-4") ? "🟢" : "🔴"}`,
+                    inline: true,
+                  },
+                  {
+                    name: "Usable models",
+                    value: models.join(",") || "None",
+                    inline: true,
+                  },
+                ],
+              },
+            ],
+            flags: ephemeral,
+          });
           return c.json({
             type: InteractionResponseType.ChannelMessageWithSource,
             data: {
@@ -166,7 +186,7 @@ app.post("/interactions", async (c) => {
                     },
                     {
                       name: "Usable models",
-                      value: models.join(","),
+                      value: models.join(",") || "None",
                       inline: true,
                     },
                   ],
