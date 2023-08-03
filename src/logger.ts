@@ -13,7 +13,7 @@ class Logger {
   private getMsg(level: LogLevel, message: unknown) {
     const infos = `[${this.getDate()}] [${level.toUpperCase()}] ${this.name} -`;
     return `${infos} ${
-      typeof message === "string" ? message : inspect(message, { depth: })
+      typeof message === "string" ? message : inspect(message, { depth: 10 })
     }`;
   }
   public trace(message: unknown) {
